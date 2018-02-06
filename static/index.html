@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="language" content="en"/>
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-responsive.min.css">
+    <script src="js/jquery-2.1.1.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="js/core.js"></script>
+    <title></title>
+    <style>
+        body {
+            background: #FFF url("/images/bd.png") 0 17px repeat-x;
+        }
+
+        .navbar .nav li.dropdown.open > .dropdown-toggle {
+            background-image: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container-fluid" id="page">
+
+    <div id="grey"></div>
+    <div id="loading">
+        <img id="loading-image" src="images/ajax-loader.gif" alt="Loading..."/>
+    </div>
+
+
+    <script>
+
+        document.getElementById('loading').style.top = document.documentElement.clientHeight / 2 - 63 + 'px';
+        document.getElementById('loading').style.left = document.documentElement.clientWidth / 2 - 63 + 'px';
+
+    </script>
+    <!-- header -->
+    <div style="position:relative">
+        <div id="lg">
+            <a href="/" title="Торговый дом мебельной фурнитуры">
+                <img src="images/logo.png" alt="Торговый дом мебельной фурнитуры" width="118" height="101"/>
+            </a>
+        </div>
+    </div>
+    <div id="header" style="margin: 50px 0 0 175px; height: 101px;">
+
+        <div id="mainmenu" class="clearfix">
+
+            <div class="pull-left" style="position: absolute; z-index: 900"><!-- mainmenu -->
+
+            </div>
+
+            <div id="loginmenu" class="pull-right clearfix">
+
+
+            </div>
+
+        </div>
+    </div>
+    <!-- header -->
+    <!-- page -->
+    <div id="content">
+
+
+        <div class="well" id="workMenu">
+
+        </div>
+
+        <div id="workArea">
+
+        </div>
+    </div>
+    <!-- page -->
+</div>
+
+
+<div class="modal hide fade" id="alert-modal">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Ошибка!</h3>
+    </div>
+    <div class="modal-body">
+        <p></p>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal" id="closeAlertModal">Close</a>
+    </div>
+</div>
+</body>
+</html>
+
+<script>
+    "use strict";
+    const c = new Core();
+    const uri = {
+        gpsBackend: "http://localhost:1603/"
+    };
+
+
+
+    function distance(lat1, lon1, lat2, lon2) {
+        const deg2rad = 0.017453292519943295; // === Math.PI / 180
+        const cos = Math.cos;
+        lat1 *= deg2rad;
+        lon1 *= deg2rad;
+        lat2 *= deg2rad;
+        lon2 *= deg2rad;
+        const a = (
+                (1 - cos(lat2 - lat1)) +
+                (1 - cos(lon2 - lon1)) * cos(lat1) * cos(lat2)
+        ) / 2;
+
+        return 12742 * Math.asin(Math.sqrt(a)); // Diameter of the earth in km (2 * 6371)
+    }
+
+
+    class DistanceReport {
+
+        constructor() {
+            this.workMenu = document.getElementById("workMenu");
+            this.workArea = document.getElementById("workArea");
+            this.devices = {};
+
+            c.load("get", uri.gpsBackend + "devices/", true)
+                    .then((data) => {
+                        this.devices = data;
+
+                    })
+                    .then(() => {
+                        this.workMenu.appendChild(this.getMenu());
+                        this.regEv();
+                    });
+
+
+        }
+
+        getMenu() {
+            const frag = document.createElement("div");
+            frag.classList.add("row");
+
+
+            this.dateNode = this.getDatePicker();
+            this.dateEndNode = this.getDatePicker();
+            this.selectNode = this.getSelectButton();
+            this.devListNode = this.getDeviceSelect();
+
+
+
+            frag.appendChild(this.devListNode);
+            frag.appendChild(this.dateNode);
+            frag.appendChild(this.dateEndNode);
+            frag.appendChild(this.selectNode);
+            return frag;
+        }
+
+
+        getDeviceSelect() {
+
+            let str = "";
+            for (let i in this.devices) {
+                let dev = this.devices[i];
+                str += `<option value="${i}" > ${dev.description}</option>`;
+            }
+
+            const html = [
+                '<div class="span3">',
+                '   <select class="deviceList">',
+                `<option></option>`,
+                str,
+                '   </select>',
+                '</div>',
+            ].join("\n");
+
+            const frag = document.createElement("div");
+            frag.innerHTML = html;
+
+            return frag;
+        }
+
+        getDatePicker() {
+            const html = [
+                '<div class="span3">',
+                '   <input type="datetime-local" />',
+                '</div>',
+            ].join("\n");
+
+            const frag = document.createElement("div");
+            frag.innerHTML = html;
+
+            return frag;
+        }
+
+        getSelectButton() {
+            const html = [
+                '<div class="span2">',
+                '   <button class="btn btn-primary" >Сформировать</button>',
+                '</div>',
+            ].join("\n");
+
+            const frag = document.createElement("div");
+            frag.innerHTML = html;
+
+            return frag;
+        }
+
+
+        getGui() {
+            return [
+                '<input'
+            ].join("\n")
+        }
+
+
+        getWaypoints() {
+            let post = {
+                a: "sysadmin",
+                u: "api",
+                p: "hs8gWP8syV-We5SGkTL5",
+                d: this.device.deviceId,
+                l: 8640000 * 2
+            };
+
+
+            post.rf = this.routeDate.getTime() / 1000;
+            post.rt = this.routeEndDate.getTime() / 1000;
+
+
+            c.act("get", uri.gpsBackend + "events/", post, function (data) {
+                console.log(data);
+                const dist = this.calcDistance(data);
+                this.render(dist);
+            }.bind(this));
+        }
+
+        calcDistance(data) {
+            const len = data.DeviceList.EventData.length;
+            console.log("point Num: " + len);
+            if (len === 0) {
+                return true;
+            }
+            let GPSPoint_lat = data.DeviceList.EventData[0].GPSPoint_lat;
+            let GPSPoint_lon = data.DeviceList.EventData[0].GPSPoint_lon;
+            let totDist = 0;
+            for (let i = 1; i < len; i++) {
+                let wPoint = data.DeviceList.EventData[i];
+
+                totDist += distance(GPSPoint_lat, GPSPoint_lon, wPoint.GPSPoint_lat, wPoint.GPSPoint_lon);
+                GPSPoint_lat = wPoint.GPSPoint_lat;
+                GPSPoint_lon = wPoint.GPSPoint_lon;
+
+            }
+
+            return Math.round(totDist * 1000);
+
+        }
+
+        regEv() {
+            this.dateNode.addEventListener("change", (e) => {
+                this.routeDate = new Date(e.target.value);
+
+            });
+
+            this.dateEndNode.addEventListener("change", (e) => {
+                this.routeEndDate = new Date(e.target.value);
+
+            });
+
+            this.devListNode.addEventListener("change", (e) => {
+                this.device = this.devices[e.target.value];
+            });
+
+            this.selectNode.addEventListener("click", (e) => {
+                this.getWaypoints();
+            });
+
+        }
+
+
+        render(amount) {
+
+
+            console.log(amount);
+            const html = [
+                '<table class="table table-bordered" >',
+                '   <thead>',
+                '       <tr>',
+                '           <th style="width: 50%;">Трэкер</th>',
+                '           <th>Километраж</th>',
+                '       </tr>',
+                '   </thead>',
+                '   <tbody>',
+                '       <tr>',
+                '           <td>', this.device.description, '</td>',
+                '           <td>', Math.round(amount / 1000), '</td>',
+                '       </tr>',
+                '   </tbody>',
+                '</table>',
+            ].join("\n");
+
+
+            const frag = document.createElement("div");
+            frag.innerHTML = html;
+
+            this.workArea.innerHTML = "";
+            this.workArea.appendChild(frag);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const report = new DistanceReport();
+    });
+
+</script>
