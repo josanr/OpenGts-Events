@@ -52,6 +52,17 @@ func main() {
 }
 
 func queryEvents(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if r.Method == "OPTIONS" {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT")
+		w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Authorization")
+
+		w.Write([]byte("OKOK"))
+		return
+	}
 	r.ParseForm()
 	var deviceStr = r.Form.Get("d")
 	var timeStart = r.Form.Get("rf")
@@ -83,6 +94,15 @@ func queryEvents(w http.ResponseWriter, r *http.Request) {
 }
 
 func queryDevices(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if r.Method == "OPTIONS" {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT")
+		w.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Authorization")
+		w.Write([]byte("OKOK"))
+		return
+	}
 	r.ParseForm()
 	var queryString = r.Form.Get("query")
 	var list []models.Device
