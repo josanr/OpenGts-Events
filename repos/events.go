@@ -1,7 +1,6 @@
 package repos
 
 import (
-	"log"
 
 	"../models"
 )

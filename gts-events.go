@@ -9,6 +9,8 @@ import (
 
 	"./repos"
 	"os"
+	"path"
+	"path/filepath"
 )
 
 var db *repos.DB
@@ -23,9 +25,15 @@ type Configuration struct {
 }
 
 func main() {
-	file, err := os.Open("config.json")
+	ex, err := os.Executable()
 	if err != nil {
-		log.Println(err)
+		panic(err)
+	}
+	filename := filepath.Dir(ex)
+	filePath := path.Join(path.Dir(filename), "/opengts-events/config.json")
+	file, err := os.Open(filePath)
+	if err != nil {
+		log.Panic(err)
 	}
 	defer file.Close()
 
@@ -33,7 +41,7 @@ func main() {
 	conf := Configuration{}
 	err = decoder.Decode(&conf)
 	if err != nil {
-		log.Println("error:", err)
+		log.Panic("error:", err)
 	}
 
 	db, err = repos.NewStore(conf.Login, conf.Password, conf.Db, conf.Host, conf.Port)
