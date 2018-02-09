@@ -61,7 +61,7 @@ func (dr *EventsRepository) GetByDevice(device models.Device, timeStart, timeEnd
 	if err != nil {
 		return ev, err
 	}
-	log.Println(tempEv.DeviceList)
+
 	if len(tempEv.DeviceList.EventData) == 0 {
 		return ev, NewEmptyListError("Empty list.")
 	}
