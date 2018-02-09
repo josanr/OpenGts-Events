@@ -3,7 +3,7 @@ package repos
 import (
 	"log"
 
-	"github.com/josanr/OpenGts-Events/models"
+	"../models"
 )
 
 type EventsRepository struct {

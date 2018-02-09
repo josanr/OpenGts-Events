@@ -14,8 +14,8 @@ type Rows struct {
 	*sql.Rows
 }
 
-func NewStore() (*DB, error) {
-	db, err := sql.Open("mysql", "root:mypass@tcp(127.0.0.1:3306)/gts")
+func NewStore(login, pass, database, host, port string) (*DB, error) {
+	db, err := sql.Open("mysql", login + ":" + pass + "@tcp(" + host + ":" + port + ")/" + database)
 	if err != nil {
 		return nil, err
 	}

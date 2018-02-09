@@ -5,16 +5,38 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/josanr/OpenGts-Events/models"
+	"./models"
 
-	"github.com/josanr/OpenGts-Events/repos"
+	"./repos"
+	"os"
 )
 
 var db *repos.DB
 var err error
 
+type Configuration struct {
+	Host     string `json:"host"`
+	Login    string `json:"login"`
+	Password string `json:"password"`
+	Db       string `json:"db"`
+	Port     string `json:"port"`
+}
+
 func main() {
-	db, err = repos.NewStore()
+	file, err := os.Open("config.json")
+	if err != nil {
+		log.Println(err)
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	conf := Configuration{}
+	err = decoder.Decode(&conf)
+	if err != nil {
+		log.Println("error:", err)
+	}
+
+	db, err = repos.NewStore(conf.Login, conf.Password, conf.Db, conf.Host, conf.Port)
 	if err != nil {
 		log.Panic(err)
 	}

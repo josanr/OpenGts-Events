@@ -3,7 +3,7 @@ package repos
 import (
 	"database/sql"
 
-	"github.com/josanr/OpenGts-Events/models"
+	"../models"
 )
 
 type DeviceRepository struct {
